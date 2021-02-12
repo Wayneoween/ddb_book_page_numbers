@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "D&D Pagenumbers for D&DBeyond",
+  "description": "Easily reference page numbers to D&DBeyond Compendia.",
+  "version": "0.1",
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "52.0a1"
+    }
+  },
+  "omnibox": {
+    "keyword" : "ddb"
+  },
+  "permissions": [
+    "https://www.dndbeyond.com",
+    "https://dndbeyond.com"
+  ]
+}
