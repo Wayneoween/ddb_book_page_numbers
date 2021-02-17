@@ -16,3 +16,8 @@ A browser extension to make it easy to reference "phb page 213" to the online re
 1. Insert the chapter numbers to dndbeyond.com compendium (e.g. [PHB](https://www.dndbeyond.com/sources/phb))
    - Depending on where it makes most sense because space might be tight
 
+# Development
+
+Requirements:
+
+- `yamllint`

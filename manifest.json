@@ -1,18 +1,26 @@
 {
   "manifest_version": 2,
-  "name": "D&D Pagenumbers for D&DBeyond",
+  "name": "Pagenumbers for D&DBeyond",
   "description": "Easily reference page numbers to D&DBeyond Compendia.",
   "version": "0.1",
-  "browser_specific_settings": {
-    "gecko": {
-      "strict_min_version": "52.0a1"
-    }
-  },
   "omnibox": {
     "keyword" : "ddb"
   },
+  "background": {
+    "scripts": [
+      "data/dmg.js",
+      "data/mm.js",
+      "data/phb.js",
+      "data/scag.js",
+      "data/xgte.js",
+      "data/supported_books.js",
+      "helper/scripts.js",
+      "pagenumbermatcher.js"
+    ],
+    "persistent": true
+  },
   "permissions": [
-    "https://www.dndbeyond.com",
-    "https://dndbeyond.com"
+    "https://www.dndbeyond.com/",
+    "https://dndbeyond.com/"
   ]
 }

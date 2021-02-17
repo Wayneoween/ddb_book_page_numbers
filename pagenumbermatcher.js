@@ -1,98 +1,89 @@
 const BASE_URL = "https://www.dndbeyond.com/sources";
+var API = chrome || browser;
 
 // Provide help text to the user.
-browser.omnibox.setDefaultSuggestion({
-  description: `Jump to the D&DBeyond Compendium URL via a page number from the Core Books
-    (e.g. "phb 123" | "path:omnibox.js onInputChanged")`
-});
-
-// Update the suggestions whenever the input is changed.
-browser.omnibox.onInputChanged.addListener((text, addSuggestions) => {
-  let headers = new Headers({"Accept": "application/json"});
-  let init = {method: 'GET', headers};
-  let url = buildSearchURL(text);
-  let request = new Request(url, init);
-
-  fetch(request)
-    .then(createSuggestionsFromResponse)
-    .then(addSuggestions);
+API.omnibox.setDefaultSuggestion({
+  description: 'Jump to the D&amp;DBeyond Compendium URL via a page number from the Core Books, e.g. "phb 123"'
 });
 
 // Open the page based on how the user clicks on a suggestion.
-browser.omnibox.onInputEntered.addListener((text, disposition) => {
-  let url = text;
-  if (!text.startsWith(SOURCE_URL)) {
+API.omnibox.onInputEntered.addListener((text, disposition) => {
+  let url = ''
+  let book = text.split(' ')[0];
+  let page = text.split(' ')[1];
+
+  // maybe book and page were entered the other way around
+  if (isNormalInteger(book) && !isNormalInteger(page)) {
+    [book, page] = [page, book]
+  }
+
+  // If we do not support the book or the page number is not a number just redirect to ddb
+  if (!SUPPORTED_BOOKS.includes(book) || !isNormalInteger(page)) {
     // Update the url if the user clicks on the default suggestion.
-    url = `${SEARCH_URL}?q=${text}`;
+    url = 'https://www.dndbeyond.com';
+  } else {
+    url = getDDBURL(book, page)    
   }
   switch (disposition) {
     case "currentTab":
-      browser.tabs.update({url});
+      API.tabs.update({url});
       break;
     case "newForegroundTab":
-      browser.tabs.create({url});
+      API.tabs.create({url});
       break;
     case "newBackgroundTab":
-      browser.tabs.create({url, active: false});
+      API.tabs.create({url, active: false});
       break;
   }
 });
 
-function buildSearchURL(text) {
-  let path = '';
-  let queryParts = [];
-  let query = '';
-  let parts = text.split(' ');
+// assign an URL to the page number entered
+function getDDBURL(book, page) {
+  data = ''
+  targeturl = ''
 
-  parts.forEach(part => {
-    if (part.startsWith("path:")) {
-      path = part.slice(5);
+  // load the correct data
+  switch(book) {
+    case 'dmg':
+      data = DMG;
+      break;
+    case 'mm':
+      data = MM;
+      break;
+    case 'phb':
+      data = PHB;
+      break;
+    case 'scag':
+      data = SCAG;
+      break;
+    case 'xgte':
+      data = XGTE;
+      break;
+    default:
+      data = BASE_URL
+  }
+
+  // should we not be able to find the data, go to ddb
+  if (data == BASE_URL) {
+    return BASE_URL;
+  }
+
+  urlpart = data[page].url
+  pagebreak = data[page].pagebreak
+
+  if (urlpart == "image") {
+    // this is a full page image, just go to the next page
+    return getDDBURL(book, page+1)
+  } else {
+    if (pagebreak == "") {
+      targeturl = urlpart;
     } else {
-      queryParts.push(part);
+      if (urlpart.indexOf('#') != -1) {
+        var split_url = urlpart.split('#');
+        targeturl = split_url[0] + "?" + pagebreak + "#" + split_url[1];
+      }
     }
-  });
+  }
 
-  query = queryParts.join(' ');
-  return `${SEARCH_URL}?q=${query}&path=${path}`;
-}
-
-function createSuggestionsFromResponse(response) {
-  return new Promise(resolve => {
-    let suggestions = [];
-    let suggestionsOnEmptyResults = [{
-      content: SOURCE_URL,
-      description: "no results found"
-    }];
-    response.json().then(json => {
-      if (!json.normal) {
-        return resolve(suggestionsOnEmptyResults);
-      }
-
-      let occurrences = json.normal["Textual Occurrences"];
-      let files = json.normal["Files"];
-
-      if (!occurrences && !files) {
-        return resolve(suggestionsOnEmptyResults);
-      }
-
-      if (occurrences) {
-        occurrences.forEach(({path, lines}) => {
-          suggestions.push({
-            content: `${SOURCE_URL}/${path}#${lines[0].lno}`,
-            description: lines[0].line,
-          });
-        });
-        return resolve(suggestions);
-      }
-
-      // There won't be any textual occurrences if the "path:" prefix is used.
-      files.forEach(({path}) => {
-        suggestions.push({
-          content: `${SOURCE_URL}/${path}`,
-          description: path,
-        });
-      });
-      return resolve(suggestions);
-    });
-  });
-}
+  return BASE_URL + '/' + book + '/' + targeturl;
+};
