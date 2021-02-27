@@ -3,7 +3,7 @@ var API = chrome || browser;
 
 // Provide help text to the user.
 API.omnibox.setDefaultSuggestion({
-  description: 'Jump to the D&amp;DBeyond Compendium URL via a page number from the Core Books, e.g. "phb 123"'
+  description: 'Jump to the DnDBeyond Compendium URL via a page number, e.g. "phb 123"'
 });
 
 // Open the page based on how the user clicks on a suggestion.
