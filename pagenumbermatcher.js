@@ -68,19 +68,22 @@ function getDDBURL(book, page) {
     return BASE_URL;
   }
 
-  urlpart = data[page].url
-  pagebreak = data[page].pagebreak
+  // fill targeturl if the page is a valid number
+  if (data[page]) {
+    urlpart = data[page].url
+    pagebreak = data[page].pagebreak
 
-  if (urlpart == "image") {
-    // this is a full page image, just go to the next page
-    return getDDBURL(book, page+1)
-  } else {
-    if (pagebreak == "") {
-      targeturl = urlpart;
+    if (urlpart == "image") {
+      // this is a full page image, just go to the next page
+      return getDDBURL(book, page + 1)
     } else {
-      if (urlpart.indexOf('#') != -1) {
-        var split_url = urlpart.split('#');
-        targeturl = split_url[0] + "?" + pagebreak + "#" + split_url[1];
+      if (pagebreak == "") {
+        targeturl = urlpart;
+      } else {
+        if (urlpart.indexOf('#') != -1) {
+          var split_url = urlpart.split('#');
+          targeturl = split_url[0] + "?" + pagebreak + "#" + split_url[1];
+        }
       }
     }
   }
