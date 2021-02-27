@@ -17,13 +17,8 @@ API.omnibox.onInputEntered.addListener((text, disposition) => {
     [book, page] = [page, book]
   }
 
-  // If we do not support the book or the page number is not a number just redirect to ddb
-  if (!SUPPORTED_BOOKS.includes(book) || !isNormalInteger(page)) {
-    // Update the url if the user clicks on the default suggestion.
-    url = 'https://www.dndbeyond.com';
-  } else {
-    url = getDDBURL(book, page)    
-  }
+  url = getDDBURL(book.toLowerCase(), page)
+
   switch (disposition) {
     case "currentTab":
       API.tabs.update({url});
@@ -41,6 +36,11 @@ API.omnibox.onInputEntered.addListener((text, disposition) => {
 function getDDBURL(book, page) {
   data = ''
   targeturl = ''
+
+  // If we do not support the book just go to the book at ddb
+  if (!SUPPORTED_BOOKS.includes(book) || !isNormalInteger(page)) {
+    return BASE_URL + '/' + book;
+  }
 
   // load the correct data
   switch(book) {
